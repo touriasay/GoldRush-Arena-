@@ -1,4 +1,8 @@
-import { Engine, FreeCamera, HemisphericLight, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
+import { Engine, FreeCamera, HemisphericLight, SceneLoader, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
+import { Inspector } from '@babylonjs/inspector';
+
+import meshUrl from "../assets/models/HVGirl.glb";
+// ... YOUR SCENE CREATION
 
 let engine;
 let canvas;
@@ -7,6 +11,8 @@ window.onload = () => {
     canvas = document.getElementById("renderCanvas");
       engine = new Engine(canvas, true);
       let scene = createScene();
+
+      Inspector.Show(scene, {});
 
       engine.runRenderLoop(function(){
         scene.render();
@@ -37,16 +43,16 @@ var createScene = function () {
     // Default intensity is 1. Let's dim the light a small amount
     light.intensity = 0.7;
 
-    // Our built-in 'sphere' shape.
-    var sphere = MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
-    var sphere2 = MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
-
-    // Move the sphere upward 1/2 its height
-    sphere.position.y = 1;
-    sphere2.position.y = 2.2;
-
     // Our built-in 'ground' shape.
     var ground = MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
-
+    
+    
+    SceneLoader.ImportMesh("", "", meshUrl, scene, function (newMeshes) {
+        // Set the target of the camera to the first imported mesh
+        newMeshes[0].name = "player";
+        newMeshes[0].scaling = new Vector3(0.1,0.1,0.1);
+        camera.target = newMeshes[0];// c'est root
+    });
+    
     return scene;
 };
