@@ -24,7 +24,7 @@
       height: 100%;
       object-fit: cover;
       z-index: 0; /* Lower z-index for background */
-      filter: blur(5px); /* Apply blur effect */
+      filter: blur(2px); /* Apply blur effect */
     }
 
     #menu {
@@ -88,7 +88,7 @@
   justify-content: center;
   font-family: 'Bebas Neue', sans-serif;
   padding: 10px;
-  background-color: rgba(0, 0, 0, 0.7); /* Background with transparency */
+  background-color: linear-gradient(145deg, #ffd700, #228b22); /* Background with transparency */
   z-index: 2;
 }
 
@@ -108,28 +108,30 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
+     
     }
 
 
 
     .settingMapButton {
-      background-color: #4c7aafd6;
+      background: linear-gradient(145deg, #228b22, #ffd700); /* Green and Gold */
       border: none;
       color: white;
       padding: 15px 30px;
-      font-size: 16px;
+      font-size: 20px;
       font-weight: bold;
       border-radius: 10px;
       cursor: pointer;
       transition: background-color 0.3s ease;
+      margin: 10px;
     }
 
     .settingMapButton:hover {
-      background-color: #3a5c84;
+      background: linear-gradient(145deg, #ffd700, #228b22); /* Gold and Green */
     }
 
     .active {
-      background-color: #3a5c84;
+      background-color: #ffd700;
     }
 
     #buttonGo {
@@ -143,7 +145,7 @@
       border-radius: 10px;
       cursor: pointer;
       transition: background-color 0.3s ease;
-      background-color: #3a846f;
+      background-color: linear-gradient(145deg, #ffd700, #228b22)
     }
 
     #buttonGo:hover {
@@ -354,9 +356,9 @@
       <div id="choicesUser">
           <span class="titleSection">Choose the country !</span>
         <div id ="Choice">
-          <button id="Japan" class="settingMapButton">(Drapeau Japon)</button>
-          <button id="Morocco" class="settingMapButton">(Drapeau Maroc)</button>
-          <button id="France" class="settingMapButton">(Drapeau France)</button>
+          <button id="Japan" class="settingMapButton">🇯🇵 Japan</button>
+          <button id="Morocco" class="settingMapButton">🇲🇦 Morocco</button>
+          <button id="France" class="settingMapButton">🇫🇷 France</button>
         </div>
         <span class="titleSection">Choose the difficulty !</span>
         <div id = "Difficulty">
