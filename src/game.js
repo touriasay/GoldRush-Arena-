@@ -1,4 +1,4 @@
-import { BoundingInfo, Color3, Color4, DefaultRenderingPipeline, FreeCamera, HemisphericLight, KeyboardEventTypes, MeshBuilder, MotionBlurPostProcess, Scalar, Scene, SceneLoader, Sound, StandardMaterial, Texture, Vector3 } from "@babylonjs/core";
+import { BoundingInfo, Color3, Color4, DefaultRenderingPipeline, FreeCamera, HemisphericLight, KeyboardEventTypes, MeshBuilder, MotionBlurPostProcess, PhysicsImpostor, Scalar, Scene, SceneLoader, Sound, StandardMaterial, Texture, Vector3 } from "@babylonjs/core";
 import { Inspector } from "@babylonjs/inspector";
 
 const TRACK_WIDTH = 8;
@@ -8,16 +8,15 @@ const BORDER_HEIGHT = 0.5;
 const NB_TRACKS = 50;
 const NB_OBSTACLES = 5;
 const SPAWN_POS_Z = (TRACK_DEPTH * NB_TRACKS);
-const SPEED_Z = 40;
+let SPEED_Z = 20;
 const SPEED_X = 10;
+const MAX_SPEED_Z = 100;
 
 import meshUrl from "../assets/models/player.glb";
 import mountainUrl from "../assets/models/mount_timpanogos.glb";
 import grassUrl from "../assets/textures/grass.jpg";
-
-
-
-import obstacle1Url from "../assets/models/a_footballer_3d_model.glb";
+import obstacle1Url from "../assets/models/obs.glb";
+import ballUrl from "../assets/models/ball.glb";
 
 class Game {
 
@@ -28,7 +27,9 @@ class Game {
     startTimer;
 
     player;
-    playerBox;
+    elapsedTime;
+    score;
+
     obstacles = [];
     tracks = [];
 
@@ -66,6 +67,8 @@ class Game {
     start() {
 
         this.startTimer = 0;
+        this.elapsedTime = 0;
+        this.score = 0;
         this.engine.runRenderLoop(() => {
 
             let delta = this.engine.getDeltaTime() / 1000.0;
@@ -74,10 +77,32 @@ class Game {
             this.update(delta);
 
             this.scene.render();
+            /*
+            const fps = this.engine.getFps().toFixed(2);
+            const fpsElement = document.getElementById('fps');
+            if (fpsElement) {
+                fpsElement.innerText = `${fps}`;
+            }
+            */
         });
     }
 
     update(delta) {
+
+
+        this.elapsedTime += delta;
+
+        if (Math.floor(this.elapsedTime) !== Math.floor(this.elapsedTime - delta)) {
+            this.score += 1;
+            document.getElementById('score').innerText = this.score;
+        }
+
+        if (Math.floor(this.elapsedTime) % 5 === 0 && Math.floor(this.elapsedTime) !== Math.floor(this.elapsedTime - delta)) {
+            SPEED_Z += 5;
+            if (SPEED_Z > MAX_SPEED_Z) {
+                SPEED_Z = MAX_SPEED_Z;
+            }
+        }
 
 
         //Déplacement des obstacles : Pour chaque obstacle, la position en z est réduite en fonction d'une vitesse (SPEED_Z) multipliée par un delta (delta). 
@@ -116,7 +141,7 @@ class Game {
     }
 
     updateMoves(delta) {
-        if (this.inputMap["KeyA"]) {
+        if (this.inputMap["KeyA"] || this.inputMap["KeyQ"]) {
             this.player.position.x -= SPEED_X * delta;
             if (this.player.position.x < -3.75)
                 this.player.position.x = -3.75;
@@ -125,10 +150,6 @@ class Game {
             this.player.position.x += SPEED_X * delta;
             if (this.player.position.x > 3.75)
                 this.player.position.x = 3.75;
-        }
-
-        if (this.actions["Space"]) {
-            //TODO jump
         }
     }
 
@@ -174,22 +195,23 @@ class Game {
         var mb = new MotionBlurPostProcess('mb', this.scene, 1.0, this.camera);
         mb.motionStrength = 1;
 
-        // Our built-in 'ground' shape.
-        //var ground = MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
 
 
         let res = await SceneLoader.ImportMeshAsync("", "", meshUrl, this.scene);
-
         // Set the target of the camera to the first imported mesh
         this.player = res.meshes[0];
-        //mb.excludeSkinnedMesh(this.player);
         res.meshes[0].name = "Player";
         res.meshes[0].scaling = new Vector3(1, 1, 1);
         res.meshes[0].position.set(0, TRACK_HEIGHT / 2, 6);
         res.meshes[0].rotation = new Vector3(0, 0, 0);
-        res.animationGroups[0].stop();
-        res.animationGroups[1].play(true);
 
+
+        // Our built-in 'football' shape.
+        res = await SceneLoader.ImportMeshAsync("", "", ballUrl, this.scene);
+
+        this.ball = res.meshes[0];
+        this.ball.scaling = new Vector3(1, 1, 1);
+        this.ball.position.set(this.player.position.x, this.player.position.y, this.player.position.z + 2);
 
 
 

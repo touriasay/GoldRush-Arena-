@@ -19,8 +19,17 @@ window.onload = () => {
 
   game  = new Game(engine,canvas);
   game.init();
-  game.start();
-  
+
+  const playButton = document.getElementById('playButton');
+  const menu = document.getElementById('menu');
+  const gui = document.getElementById("gui");
+
+  playButton.addEventListener('click', () => {
+    menu.remove();
+    gui.remove();
+    game.start();
+    canvas.focus();
+  });  
 
 }
 
