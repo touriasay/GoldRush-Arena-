@@ -17,9 +17,9 @@ import mountainUrl from "../assets/models/mount_timpanogos.glb";
 import grassUrl from "../assets/textures/grass.jpg";
 import obstacle1Url from "../assets/models/obs.glb";
 import ballUrl from "../assets/models/football__soccer_ball.glb";
+import stadiumUrl from "../assets/models/stadium.glb";
 
-import musicUrl from "../assets/sounds/Cyberpunk Moonlight Sonata v2.mp3";
-import hitSoundUrl from "../assets/sounds/344033__reitanna__cute-impact.wav";
+
 
 class Game {
 
@@ -30,6 +30,7 @@ class Game {
     startTimer;
 
     player;
+    playerBox;
     elapsedTime;
     score;
 
@@ -62,7 +63,7 @@ class Game {
             });
             this.engine.hideLoadingUI();
 
-            //Inspector.Show(this.scene, {});
+            Inspector.Show(this.scene, {});
         });
 
     }
@@ -90,9 +91,17 @@ class Game {
         });
     }
 
+    endGame() {
+        // Arrêter le moteur de rendu
+        this.engine.stopRenderLoop();
+
+        // Enregistrer le score ou effectuer d'autres actions nécessaires
+
+        // Rediriger l'utilisateur vers une autre page HTML
+        window.location.href = "index.html";
+    }
 
     update(delta) {
-
 
         this.elapsedTime += delta;
 
@@ -120,15 +129,11 @@ class Game {
                 let z = Scalar.RandomRange(SPAWN_POS_Z - 15, SPAWN_POS_Z + 15);
                 obstacle.position.set(x, 0.5, z);
             }
-            /*
-            else {
-
-                if (this.player.intersectsMesh(obstacle, false)) {
-                    this.aie.play();
-                }
-
+            if (this.player.intersectsMesh(obstacle, false)) {
+                //this.music.play();
+                this.endGame(); // Appel de la fonction endGame() en cas de collision
             }
-            */
+
         }
 
 
@@ -173,14 +178,6 @@ class Game {
 
         // This creates a basic Babylon Scene object (non-mesh)
         this.scene = new Scene(this.engine);
-        this.scene.clearColor = new Color3(0.7, 0.7, 0.95);
-        this.scene.ambientColor = new Color3(0.8, 0.8, 1);
-        this.scene.fogMode = Scene.FOGMODE_LINEAR;
-        this.scene.fogStart = SPAWN_POS_Z - 30;
-        this.scene.fogEnd = SPAWN_POS_Z;
-        this.scene.fogColor = new Color3(0.6, 0.6, 0.85);
-        this.scene.collisionsEnabled = true;
-        this.scene.gravity = new Vector3(0, -0.15, 0);
 
 
         // This creates and positions a free camera (non-mesh)
@@ -207,7 +204,6 @@ class Game {
         // Default intensity is 1. Let's dim the light a small amount
         light.intensity = 0.7;
 
-        
 
 
 
@@ -223,6 +219,7 @@ class Game {
         // Our built-in 'football' shape.
         res = await SceneLoader.ImportMeshAsync("", "", ballUrl, this.scene);
         this.ball = res.meshes[0];
+        res.meshes[0].name = "Ball";
         this.ball.scaling = new Vector3(0.1, 0.1, 0.1);
         this.ball.position = new Vector3(2, 0.1, 8);
         this.ball.position.set(this.player.position.x, 0.15, this.player.position.z + 1);
@@ -244,7 +241,6 @@ class Game {
 
 
 
-
         res = await SceneLoader.ImportMeshAsync("", "", mountainUrl, this.scene);
         // Set the target of the camera to the first imported mesh
         res.meshes[0].name = "mountain";
@@ -256,14 +252,16 @@ class Game {
 
         res = await SceneLoader.ImportMeshAsync("", "", obstacle1Url, this.scene);
         let obstacleModele = res.meshes[0];
-
+        res.meshes[0].name = "Obstacle";
         for (let i = 0; i < NB_OBSTACLES; i++) {
             let obstacle = obstacleModele.clone("");
             obstacle.scaling = new Vector3(1, 1, 1);
+            obstacle.checkCollisions = true;
+            obstacle.collisionGroup = 2;
+
             let x = Scalar.RandomRange(-TRACK_WIDTH / 2, TRACK_WIDTH / 2);
             let z = Scalar.RandomRange(SPAWN_POS_Z - 15, SPAWN_POS_Z + 15);
             obstacle.position.set(x, 0, z);
-
             let childMeshes = obstacle.getChildMeshes();
 
             let min = childMeshes[0].getBoundingInfo().boundingBox.minimumWorld;
@@ -276,18 +274,11 @@ class Game {
                 max = Vector3.Maximize(max, meshMax);
             }
             obstacle.setBoundingInfo(new BoundingInfo(min, max));
-
-            obstacle.showBoundingBox = false;
-            obstacle.checkCollisions = true;
-            obstacle.collisionGroup = 2;
-
+           
             this.obstacles.push(obstacle);
         }
+        obstacleModele.setEnabled(false);
         obstacleModele.dispose;
-
-
-        //this.music = new Sound("music", musicUrl, this.scene, undefined, { loop: true, autoplay: true, volume: 0.4 });
-        //this.aie = new Sound("aie", hitSoundUrl, this.scene);
 
     }
 }
