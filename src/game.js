@@ -6,7 +6,7 @@ const TRACK_HEIGHT = 0.1;
 const TRACK_DEPTH = 3;
 const BORDER_HEIGHT = 0.5;
 const NB_TRACKS = 50;
-const NB_OBSTACLES = 5;
+let NB_OBSTACLES = 5;
 const SPAWN_POS_Z = (TRACK_DEPTH * NB_TRACKS);
 let SPEED_Z = 20;
 const SPEED_X = 10;
@@ -16,7 +16,10 @@ import meshUrl from "../assets/models/player.glb";
 import mountainUrl from "../assets/models/mount_timpanogos.glb";
 import grassUrl from "../assets/textures/grass.jpg";
 import obstacle1Url from "../assets/models/obs.glb";
-import ballUrl from "../assets/models/ball.glb";
+import ballUrl from "../assets/models/football__soccer_ball.glb";
+
+import musicUrl from "../assets/sounds/Cyberpunk Moonlight Sonata v2.mp3";
+import hitSoundUrl from "../assets/sounds/344033__reitanna__cute-impact.wav";
 
 class Game {
 
@@ -77,15 +80,16 @@ class Game {
             this.update(delta);
 
             this.scene.render();
-            /*
+
             const fps = this.engine.getFps().toFixed(2);
             const fpsElement = document.getElementById('fps');
             if (fpsElement) {
                 fpsElement.innerText = `${fps}`;
             }
-            */
+
         });
     }
+
 
     update(delta) {
 
@@ -116,6 +120,15 @@ class Game {
                 let z = Scalar.RandomRange(SPAWN_POS_Z - 15, SPAWN_POS_Z + 15);
                 obstacle.position.set(x, 0.5, z);
             }
+            /*
+            else {
+
+                if (this.player.intersectsMesh(obstacle, false)) {
+                    this.aie.play();
+                }
+
+            }
+            */
         }
 
 
@@ -151,6 +164,9 @@ class Game {
             if (this.player.position.x > 3.75)
                 this.player.position.x = 3.75;
         }
+        this.ball.position.x = this.player.position.x;
+        this.ball.position.y = 0.15;
+        this.ball.position.z = this.player.position.z + 1;
     }
 
     async createScene() {
@@ -191,9 +207,7 @@ class Game {
         // Default intensity is 1. Let's dim the light a small amount
         light.intensity = 0.7;
 
-        // Finally create the motion blur effect :)
-        var mb = new MotionBlurPostProcess('mb', this.scene, 1.0, this.camera);
-        mb.motionStrength = 1;
+        
 
 
 
@@ -208,10 +222,10 @@ class Game {
 
         // Our built-in 'football' shape.
         res = await SceneLoader.ImportMeshAsync("", "", ballUrl, this.scene);
-
         this.ball = res.meshes[0];
-        this.ball.scaling = new Vector3(1, 1, 1);
-        this.ball.position.set(this.player.position.x, this.player.position.y, this.player.position.z + 2);
+        this.ball.scaling = new Vector3(0.1, 0.1, 0.1);
+        this.ball.position = new Vector3(2, 0.1, 8);
+        this.ball.position.set(this.player.position.x, 0.15, this.player.position.z + 1);
 
 
 
@@ -240,10 +254,8 @@ class Game {
 
 
 
-        //let obstacleModele = MeshBuilder.CreateBox("obstacle", { width: 0.5, height: 1, depth: 1 }, this.scene);
         res = await SceneLoader.ImportMeshAsync("", "", obstacle1Url, this.scene);
         let obstacleModele = res.meshes[0];
-
 
         for (let i = 0; i < NB_OBSTACLES; i++) {
             let obstacle = obstacleModele.clone("");
@@ -272,6 +284,10 @@ class Game {
             this.obstacles.push(obstacle);
         }
         obstacleModele.dispose;
+
+
+        //this.music = new Sound("music", musicUrl, this.scene, undefined, { loop: true, autoplay: true, volume: 0.4 });
+        //this.aie = new Sound("aie", hitSoundUrl, this.scene);
 
     }
 }

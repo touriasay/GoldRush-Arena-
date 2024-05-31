@@ -68,15 +68,7 @@
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 12px 40px rgba(0, 0, 0, 0.19);
     }
 
-    #backgroundImage {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: blur(2px);
-    }
+
 
     #renderCanvas {
       width: 100%;
@@ -128,9 +120,9 @@
 <body>
   <div id="score">0</div>
   <canvas id="renderCanvas" touch-action="none"></canvas>
-  <!--<div id="fps">0</div>-->
+  <div id="fps">0</div>
   <div id="gui">
-    <img id="backgroundImage" src="/assets/img/backgroundMenu.jpg">
+    <img id="backgroundImage" src="../assets/img/backgroundMenu.jpg">
     <div id="menu">
       <div id="buttonContainer">
         <button id="playButton" class="menuButton">PLAY</button>
