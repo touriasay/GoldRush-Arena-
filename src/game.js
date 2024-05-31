@@ -13,11 +13,12 @@ const SPEED_X = 10;
 const MAX_SPEED_Z = 100;
 
 import meshUrl from "../assets/models/player.glb";
-import mountainUrl from "../assets/models/mount_timpanogos.glb";
 import grassUrl from "../assets/textures/grass.jpg";
 import obstacle1Url from "../assets/models/obs.glb";
 import ballUrl from "../assets/models/football__soccer_ball.glb";
-import stadiumUrl from "../assets/models/stadium.glb";
+import stadiumUrl from "../assets/models/stadiumV2.glb";
+import menuMusicUrl from "../assets/sounds/menu.mp3";  
+import gameplayMusicUrl from "../assets/sounds/gameplay.mp3";
 
 
 
@@ -52,18 +53,16 @@ class Game {
                 switch (kbInfo.type) {
                     case KeyboardEventTypes.KEYDOWN:
                         this.inputMap[kbInfo.event.code] = true;
-                        //console.log(`KEY DOWN: ${kbInfo.event.code} / ${kbInfo.event.key}`);
                         break;
                     case KeyboardEventTypes.KEYUP:
                         this.inputMap[kbInfo.event.code] = false;
                         this.actions[kbInfo.event.code] = true;
-                        //console.log(`KEY UP: ${kbInfo.event.code} / ${kbInfo.event.key}`);
                         break;
                 }
             });
             this.engine.hideLoadingUI();
-
-            Inspector.Show(this.scene, {});
+            this.menuMusic.play();
+            //Inspector.Show(this.scene, {});
         });
 
     }
@@ -73,6 +72,8 @@ class Game {
         this.startTimer = 0;
         this.elapsedTime = 0;
         this.score = 0;
+        this.menuMusic.stop();
+        this.gameplayMusic.play();
         this.engine.runRenderLoop(() => {
 
             let delta = this.engine.getDeltaTime() / 1000.0;
@@ -91,16 +92,6 @@ class Game {
         });
     }
 
-    endGame() {
-        // Arrêter le moteur de rendu
-        this.engine.stopRenderLoop();
-
-        // Enregistrer le score ou effectuer d'autres actions nécessaires
-
-        // Rediriger l'utilisateur vers une autre page HTML
-        window.location.href = "index.html";
-    }
-
     update(delta) {
 
         this.elapsedTime += delta;
@@ -117,9 +108,6 @@ class Game {
             }
         }
 
-
-        //Déplacement des obstacles : Pour chaque obstacle, la position en z est réduite en fonction d'une vitesse (SPEED_Z) multipliée par un delta (delta). 
-        //Cela signifie que les obstacles se déplacent vers le joueur ou la caméra (dépendant de l'orientation du système de coordonnées du jeu).
         for (let i = 0; i < this.obstacles.length; i++) {
             let obstacle = this.obstacles[i];
 
@@ -131,13 +119,13 @@ class Game {
             }
             if (this.player.intersectsMesh(obstacle, false)) {
                 //this.music.play();
-                this.endGame(); // Appel de la fonction endGame() en cas de collision
+                //this.engine.stopRenderLoop();
+                //window.location.href = "gameover.html";
             }
 
         }
 
 
-        // this.tracks[lastIndex].position.y = Math.sin(this.startTimer*10 ) / 2;
         for (let i = 0; i < this.tracks.length; i++) {
             let track = this.tracks[i];
             track.position.z -= SPEED_Z / 3 * delta;
@@ -148,9 +136,7 @@ class Game {
             let track = this.tracks[i];
             if (track.position.z <= 0) {
                 let nextTrackIdx = (i + this.tracks.length - 1) % this.tracks.length;
-                //on le repositionne ET on le déplace aussi
                 track.position.z = this.tracks[nextTrackIdx].position.z + TRACK_DEPTH;
-                //track.position.y = Math.sin(this.startTimer*10 ) * TRACK_HEIGHT;
 
             }
         }
@@ -176,20 +162,14 @@ class Game {
 
     async createScene() {
 
-        // This creates a basic Babylon Scene object (non-mesh)
         this.scene = new Scene(this.engine);
 
-
-        // This creates and positions a free camera (non-mesh)
         this.camera = new FreeCamera("camera1", new Vector3(0, 3.8, 0), this.scene);
 
-        // This targets the camera to scene origin
         this.camera.setTarget(new Vector3(0, 3, 3));
 
-        // This attaches the camera to the canvas
         this.camera.attachControl(this.canvas, true);
 
-        // Set up new rendering pipeline
         var pipeline = new DefaultRenderingPipeline("default", true, this.scene, [this.camera]);
 
         pipeline.glowLayerEnabled = true;
@@ -198,17 +178,12 @@ class Game {
         pipeline.glowLayer.ldrMerge = true;
 
 
-        // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
         var light = new HemisphericLight("light", new Vector3(0, 1, 0), this.scene);
 
-        // Default intensity is 1. Let's dim the light a small amount
         light.intensity = 0.7;
 
 
-
-
         let res = await SceneLoader.ImportMeshAsync("", "", meshUrl, this.scene);
-        // Set the target of the camera to the first imported mesh
         this.player = res.meshes[0];
         res.meshes[0].name = "Player";
         res.meshes[0].scaling = new Vector3(1, 1, 1);
@@ -216,7 +191,6 @@ class Game {
         res.meshes[0].rotation = new Vector3(0, 0, 0);
 
 
-        // Our built-in 'football' shape.
         res = await SceneLoader.ImportMeshAsync("", "", ballUrl, this.scene);
         this.ball = res.meshes[0];
         res.meshes[0].name = "Ball";
@@ -241,13 +215,12 @@ class Game {
 
 
 
-        res = await SceneLoader.ImportMeshAsync("", "", mountainUrl, this.scene);
-        // Set the target of the camera to the first imported mesh
-        res.meshes[0].name = "mountain";
-        res.meshes[0].position = new Vector3(-18, -31.3, 123.2);
-        res.meshes[0].rotation = new Vector3(0, Math.PI / 2, 0);
+        res = await SceneLoader.ImportMeshAsync("", "", stadiumUrl, this.scene);
+        res.meshes[0].name = "stadium";
+        res.meshes[0].position = new Vector3(14.32, 19.23, 43.27);       
+        res.meshes[0].rotation = new Vector3(0, 0, 0);
         res.meshes[0].scaling = new Vector3(2, 2, 2);
-
+        
 
 
         res = await SceneLoader.ImportMeshAsync("", "", obstacle1Url, this.scene);
@@ -274,13 +247,17 @@ class Game {
                 max = Vector3.Maximize(max, meshMax);
             }
             obstacle.setBoundingInfo(new BoundingInfo(min, max));
-           
+
             this.obstacles.push(obstacle);
         }
         obstacleModele.setEnabled(false);
         obstacleModele.dispose;
+        this.menuMusic = new Sound("menuMusic", menuMusicUrl, this.scene, null, { loop: true, autoplay: false, volume: 0.3 });
+        this.gameplayMusic = new Sound("gameplayMusic", gameplayMusicUrl, this.scene, null, { loop: true, autoplay: false, volume: 0.3 });
 
     }
+
+   
 }
 
 export default Game;
